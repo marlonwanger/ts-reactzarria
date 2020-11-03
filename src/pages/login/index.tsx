@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Grid } from '@material-ui/core';
 import styled from 'styled-components';
 import firebase from 'firebase/app';
@@ -7,7 +7,7 @@ import 'firebase/auth';
 import { ReactComponent as MainLogo } from './logo-react-zzaria.svg';
 
 // Your web app's Firebase configuration
-var firebaseConfig = {
+const firebaseConfig = {
   apiKey: 'AIzaSyD_AojUgMbMtrlWmbxsF97bd__eM8VcT1c',
   authDomain: 'reactzzaria-fb987.firebaseapp.com',
   databaseURL: 'https://reactzzaria-fb987.firebaseio.com',
@@ -19,17 +19,38 @@ var firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
+interface GitHubUser {
+  uid: string;
+  displayName: string | null;
+  email: string;
+  photoURL: string;
+}
+
 function LoginPage() {
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState<boolean>(false);
+  const [userGithub, setUserGithub] = useState<GitHubUser>();
+
   useEffect(() => {
-    firebase.auth().onAuthStateChanged((user) => {
-      if (user) console.log('Usuario logado', user);
-      else console.log('Usuario nao logado', user);
+    firebase.auth().onAuthStateChanged((user: any) => {
+      setIsUserLoggedIn(!!user);
+      setUserGithub(user);
     });
   }, []);
 
   function GitHubAuth() {
     const provider = new firebase.auth.GithubAuthProvider();
     firebase.auth().signInWithRedirect(provider);
+  }
+
+  function logout() {
+    firebase
+      .auth()
+      .signOut()
+      .then(() => {
+        console.log('Deslogou');
+        setIsUserLoggedIn(false);
+        setUserGithub(undefined);
+      });
   }
 
   return (
@@ -40,6 +61,8 @@ function LoginPage() {
         </Grid>
         <Grid item xs={12} container justify="center">
           <GithubButton onClick={GitHubAuth}>Entrar com github</GithubButton>
+          {console.log(isUserLoggedIn)}
+          {console.log(userGithub)}
         </Grid>
       </Grid>
     </Container>
