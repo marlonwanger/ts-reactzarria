@@ -1,23 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Button, Grid } from '@material-ui/core';
+import firebase from '../../services/firebase';
 import styled from 'styled-components';
-import firebase from 'firebase/app';
-import 'firebase/auth';
 
 import { ReactComponent as MainLogo } from './logo-react-zzaria.svg';
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: 'AIzaSyD_AojUgMbMtrlWmbxsF97bd__eM8VcT1c',
-  authDomain: 'reactzzaria-fb987.firebaseapp.com',
-  databaseURL: 'https://reactzzaria-fb987.firebaseio.com',
-  projectId: 'reactzzaria-fb987',
-  storageBucket: 'reactzzaria-fb987.appspot.com',
-  messagingSenderId: '509358972386',
-  appId: '1:509358972386:web:38ca3aa92cda432bafedbb',
-};
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
 
 interface GitHubUser {
   uid: string;
@@ -25,6 +11,9 @@ interface GitHubUser {
   email: string;
   photoURL: string;
 }
+
+// Removo essa funcao do Loginpage pq eu nao preciso recriar essa funcao sempre
+// que o componente atualizar/renderizar
 
 function LoginPage() {
   const [isUserLoggedIn, setIsUserLoggedIn] = useState<boolean>(false);
@@ -37,12 +26,15 @@ function LoginPage() {
     });
   }, []);
 
-  function GitHubAuth() {
+  const GitHubAuth = useCallback(() => {
     const provider = new firebase.auth.GithubAuthProvider();
     firebase.auth().signInWithRedirect(provider);
-  }
+  }, []);
 
-  function logout() {
+  // essa funcao eu nao posso remover ela do componente, pois ela utiliza de States
+  // dessa forma essa funcao semppre é recriada, cada vez que o componentes atualizar.
+  // para evitar, utilizamos o useCallback
+  const logout = useCallback(() => {
     firebase
       .auth()
       .signOut()
@@ -51,7 +43,7 @@ function LoginPage() {
         setIsUserLoggedIn(false);
         setUserGithub(undefined);
       });
-  }
+  }, []);
 
   return (
     <Container>
